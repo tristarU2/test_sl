@@ -1,0 +1,27 @@
+FROM ubuntu:latest
+
+# Копируем исходный код
+COPY ./ /app
+WORKDIR /app
+
+# Обновляем список пакетов
+RUN apt-get update 
+
+# Обновляем пакеты
+RUN apt-get upgrade
+
+# Устанавливаем нужные пакеты
+RUN apt-get -y install libpq-dev imagemagick gsfonts python3.8 ssh supervisor
+
+# Устанавливаем pip
+RUN apt-get install -y python-pip
+
+# Устанавливаем зависимости
+RUN pip install -r requirements.txt
+
+# Чистим за собой кэши
+RUN apt-get clean 
+RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
+
+# Запускаем скрипт, который запустит все остальное
+CMD ["/app/init.sh"]

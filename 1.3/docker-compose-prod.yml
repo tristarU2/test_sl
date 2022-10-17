@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+
+  app:
+    container_name: task2
+    hostname: task2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: task2:latest
+    restart: always
+    volumes:
+      - ${PWD}:/app
+    environment:
+      DB_NAME: vlad-db
+      DB_USER: vlad
+      DB_PASSWORD: password
+      DB_HOST: db
+    networks:
+      - vlad-net
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: /app/wait-for-it.sh db:5432 -- /app/docker-entrypoint.sh
+
+  db:
+    container_name: db
+    hostname: db
+    image: postgres:10.6-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: vlad-db
+      POSTGRES_USER: vlad
+      POSTGRES_PASSWORD: password
+    networks:
+      - vlad-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      timeout: 5s
+      interval: 10s
+      retries: 100
+
+networks:
+  vlad-net:
+    name: vlad-net

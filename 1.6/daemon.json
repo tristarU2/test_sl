@@ -1,0 +1,15 @@
+{
+  "log-driver": "syslog",
+  "log-opts": {
+    "tag": "container_name/{{.Name}}"
+  },
+  "bip": "10.5.0.1/16",
+  "default-address-pools":[
+    {
+      "base":"192.168.0.0/16",
+      "size":28
+    }
+  ],
+  "registry-mirrors": ["http://172.20.100.52:5000"]
+}
+~              

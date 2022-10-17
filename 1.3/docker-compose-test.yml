@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+
+  app:
+    container_name: task2-test
+    hostname: task2-test
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: task2-test:latest
+    restart: unless-stopped
+    volumes:
+      - ${PWD}:/app
+    environment:
+      DB_NAME: vlad-db
+      DB_USER: vlad
+      DB_PASSWORD: password
+      DB_HOST: db-test
+    networks:
+      - vlad-test-net
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: /app/wait-for-it.sh db-test:5432 -- python /app/manage.py test
+
+  db:
+    container_name: db-test
+    hostname: db-test
+    image: postgres:10.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vlad-db
+      POSTGRES_USER: vlad
+      POSTGRES_PASSWORD: password
+    networks:
+      - vlad-test-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      timeout: 5s
+      interval: 5s
+      retries: 100
+
+networks:
+  vlad-test-net:
+    name: vlad-test-net
